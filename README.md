@@ -12,35 +12,9 @@ No clicking in the console. Define the infrastructure, run the commands, AWS han
 
 ---
 
-## Architecture
+## Getting Started
 
-A VPC with public and private subnets, a t2.micro EC2 instance, an S3 bucket for Terraform remote state, and IAM policies following least-privilege principles. Everything provisioned and destroyed with a single command.
-
----
-
-## Prerequisites
-
-- Terraform 1.15+
-- AWS CLI configured with an IAM user (`terraform-dev`)
-- Python 3+ with boto3
-- AWS account (Free Tier compatible)
-
----
-
-## Usage
-
-```bash
-cd terraform/envs/dev
-terraform init
-terraform plan
-terraform apply
-```
-
-Destroy everything when done:
-
-```bash
-terraform destroy
-```
+Before running anything, check the [Prerequisites & Usage guide](docs/PREREQUISITES.md) for setup instructions, AWS configuration, and usage commands.
 
 ---
 
@@ -50,7 +24,7 @@ aws-core-terraform/
 │   ├── modules/        # Reusable modules — vpc, ec2, s3, iam
 │   └── envs/dev/       # Dev environment — main, variables, outputs
 ├── scripts/boto3/      # Python scripts to interact with deployed resources
-├── docs/               # Architecture notes
+├── docs/               # Architecture notes and prerequisites
 └── decisions/          # ADRs — architectural decision records
 ---
 
