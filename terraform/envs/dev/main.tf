@@ -11,3 +11,11 @@ terraform {
 provider "aws" {
   region = var.aws_region
 }
+
+module "vpc" {
+  source = "../../modules/vpc"
+  
+  project_name = var.project
+  environment = var.environment
+  vpc_cidr  = "10.0.0.0/17"  
+}
