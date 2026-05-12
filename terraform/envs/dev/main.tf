@@ -19,3 +19,11 @@ module "vpc" {
   environment = var.environment
   vpc_cidr  = "10.0.0.0/17"  
 }
+
+module "ec2" {
+  source = "../../modules/ec2/"
+  
+  subnet_id = module.vpc.public_subnet_1_id
+  project_name = var.project
+  environment = var.environment
+}
