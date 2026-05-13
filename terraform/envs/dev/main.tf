@@ -27,3 +27,11 @@ module "ec2" {
   project_name = var.project
   environment = var.environment
 }
+
+module "bucket" {
+  source = "../../modules/s3/"
+
+  bucket_name = "aws-terraform-dev-adrian"
+  project_name = var.project
+  environment = var.environment
+}
