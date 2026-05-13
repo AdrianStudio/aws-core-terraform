@@ -14,7 +14,7 @@ No clicking in the console. Define the infrastructure, run the commands, AWS han
 
 ## Architecture
 
-
+<img width="1225" height="601" alt="image" src="https://github.com/user-attachments/assets/6eb807b0-3ef2-4f94-bfa8-49ee42e3de7f" />
 
 ---
 
