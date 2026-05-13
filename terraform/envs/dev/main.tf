@@ -35,3 +35,11 @@ module "bucket" {
   project_name = var.project
   environment = var.environment
 }
+
+module "iam" {
+  source = "../../modules/iam/"
+  
+  project_name = var.project
+  environment = var.environment
+  bucket_arn = module.bucket.bucket_arn
+}
