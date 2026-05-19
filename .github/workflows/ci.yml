@@ -29,5 +29,6 @@ jobs:
 
       - name: Run tfsec
         run: |
-          curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
-          tfsec terraform/
+          wget -q https://github.com/aquasecurity/tfsec/releases/download/v1.28.14/tfsec-linux-amd64 -O tfsec
+          chmod +x tfsec
+          ./tfsec terraform/
