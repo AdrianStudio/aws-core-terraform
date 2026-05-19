@@ -7,13 +7,12 @@ resource "aws_vpc" "main" {
   }
 }
 
-
 resource "aws_subnet" "public1" {
-  vpc_id = aws_vpc.main.id
-  cidr_block = var.public_subnet_1_cidr
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.public_subnet_1_cidr
   availability_zone = "eu-west-1a"
   tags = {
-    Type = "public"
+    Type        = "public"
     Name        = "${var.project_name}-${var.environment}-public-subnet-1"
     Environment = var.environment
     Project     = var.project_name
@@ -21,77 +20,118 @@ resource "aws_subnet" "public1" {
 }
 
 resource "aws_subnet" "public2" {
-  vpc_id = aws_vpc.main.id
-  cidr_block = var.public_subnet_2_cidr
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.public_subnet_2_cidr
   availability_zone = "eu-west-1b"
   tags = {
-    Type = "public"
+    Type        = "public"
     Name        = "${var.project_name}-${var.environment}-public-subnet-2"
     Environment = var.environment
     Project     = var.project_name
   }
 }
 
-
 resource "aws_subnet" "private1" {
-  vpc_id = aws_vpc.main.id
-  cidr_block = var.private_subnet_1_cidr
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.private_subnet_1_cidr
   availability_zone = "eu-west-1a"
   tags = {
-    Type = "private"
+    Type        = "private"
     Name        = "${var.project_name}-${var.environment}-private-subnet-1"
     Environment = var.environment
     Project     = var.project_name
   }
 }
 
-
 resource "aws_subnet" "private2" {
-  vpc_id = aws_vpc.main.id
-  cidr_block = var.private_subnet_2_cidr
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.private_subnet_2_cidr
   availability_zone = "eu-west-1b"
   tags = {
-    Type = "private"
+    Type        = "private"
     Name        = "${var.project_name}-${var.environment}-private-subnet-2"
     Environment = var.environment
     Project     = var.project_name
   }
 }
 
-
 resource "aws_internet_gateway" "IGW" {
   vpc_id = aws_vpc.main.id
   tags = {
-    Type = "public"
+    Type        = "public"
     Name        = "${var.project_name}-${var.environment}-internet-gateway"
     Environment = var.environment
     Project     = var.project_name
   }
 }
 
-
 resource "aws_route_table" "route1" {
   vpc_id = aws_vpc.main.id
+
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.IGW.id
-  } 
+  }
+
   tags = {
-    Type = "public"
+    Type        = "public"
     Name        = "${var.project_name}-${var.environment}-route-table"
     Environment = var.environment
     Project     = var.project_name
   }
 }
 
-
 resource "aws_route_table_association" "public_route1" {
-  subnet_id = aws_subnet.public1.id
+  subnet_id      = aws_subnet.public1.id
   route_table_id = aws_route_table.route1.id
 }
 
-
 resource "aws_route_table_association" "public_route2" {
-  subnet_id = aws_subnet.public2.id
+  subnet_id      = aws_subnet.public2.id
   route_table_id = aws_route_table.route1.id
+}
+
+resource "aws_flow_log" "main" {
+  vpc_id               = aws_vpc.main.id
+  traffic_type         = "ALL"
+  iam_role_arn         = aws_iam_role.flow_log_role.arn
+  log_destination      = aws_cloudwatch_log_group.flow_log.arn
+  log_destination_type = "cloud-watch-logs"
+}
+
+resource "aws_cloudwatch_log_group" "flow_log" {
+  name = "/aws/vpc/flow-logs/${var.project_name}-${var.environment}"
+}
+
+resource "aws_iam_role" "flow_log_role" {
+  name = "${var.project_name}-${var.environment}-flow-log-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "vpc-flow-logs.amazonaws.com" }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "flow_log_policy" {
+  name = "flow-log-policy"
+  role = aws_iam_role.flow_log_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams"
+      ]
+      Resource = "*"
+    }]
+  })
 }
