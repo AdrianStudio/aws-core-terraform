@@ -28,4 +28,6 @@ jobs:
         run: terraform validate
 
       - name: Run tfsec
-        uses: aquasecurity/tfsec-action@v1.0.3
+        run: |
+          curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+          tfsec terraform/
