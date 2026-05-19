@@ -100,7 +100,8 @@ resource "aws_flow_log" "main" {
 }
 
 resource "aws_cloudwatch_log_group" "flow_log" {
-  name = "/aws/vpc/flow-logs/${var.project_name}-${var.environment}"
+  name       = "/aws/vpc/flow-logs/${var.project_name}-${var.environment}"
+  kms_key_id = "aws/cloudwatch"
 }
 
 resource "aws_iam_role" "flow_log_role" {
@@ -131,7 +132,7 @@ resource "aws_iam_role_policy" "flow_log_policy" {
         "logs:DescribeLogGroups",
         "logs:DescribeLogStreams"
       ]
-      Resource = "*"
+      Resource = "${aws_cloudwatch_log_group.flow_log.arn}:*"
     }]
   })
 }
