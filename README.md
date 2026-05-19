@@ -72,6 +72,7 @@ GitHub Actions pipeline triggered on every push to `main`.
 
 ## Structure
 
+```
 aws-core-terraform/
 ├── .github/workflows/  # GitHub Actions CI pipeline
 ├── terraform/
@@ -80,7 +81,7 @@ aws-core-terraform/
 ├── scripts/boto3/      # Python scripts to interact with deployed resources
 ├── docs/               # Architecture diagram and prerequisites
 └── decisions/          # ADRs — architectural decision records
-
+```
 
 ---
 
