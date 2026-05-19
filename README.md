@@ -2,7 +2,8 @@
 ![AWS](https://img.shields.io/badge/AWS-Cloud-FF9900?logo=amazonaws&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3+-blue?logo=python&logoColor=white)
 ![boto3](https://img.shields.io/badge/boto3-AWS%20SDK-FF9900?logo=amazonaws&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI-2088FF?logo=githubactions&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%20Passing-2088FF?logo=githubactions&logoColor=white)
+![tfsec](https://img.shields.io/badge/tfsec-0%20findings-brightgreen)
 
 # aws-core-terraform
 
@@ -22,7 +23,7 @@ No clicking in the console. Define the infrastructure, run the commands, AWS han
 
 1. `terraform init` — downloads the AWS provider and registers all modules
 2. `terraform plan` — shows exactly what will be created before touching anything
-3. `terraform apply` — deploys 17 resources in AWS in under 2 minutes
+3. `terraform apply` — deploys 25+ resources in AWS in under 2 minutes
 
 Every resource is tagged with `Project`, `Environment`, and `Name` for easy identification in the AWS console.
 
@@ -32,24 +33,54 @@ Every resource is tagged with `Project`, `Environment`, and `Name` for easy iden
 
 | Module | What it does |
 |--------|-------------|
-| `vpc` | VPC with 2 public and 2 private subnets across 2 AZs, Internet Gateway, and route table |
-| `ec2` | t3.micro instance deployed in the public subnet using the latest Amazon Linux 2023 AMI |
-| `s3` | Bucket with versioning enabled, AES256 encryption, and public access fully blocked |
+| `vpc` | VPC with 2 public and 2 private subnets across 2 AZs, Internet Gateway, route table, and VPC Flow Logs to CloudWatch |
+| `ec2` | t3.micro instance with encrypted root volume, IMDSv2 enforced, deployed in the public subnet using the latest Amazon Linux 2023 AMI |
+| `s3` | Bucket with versioning enabled, KMS encryption, public access fully blocked, and access logging |
 | `iam` | IAM Role with least-privilege policy — EC2 can read S3, nothing more |
+
+---
+
+## boto3 Script
+
+Python script that interacts with deployed AWS resources using the AWS SDK.
+
+| Function | What it does |
+|----------|-------------|
+| `lista_ec2()` | Lists all active EC2 instances with ID and state |
+| `describir_s3()` | Lists S3 buckets with name and creation date |
+| `subir_objeto()` | Uploads a test object to the S3 bucket |
+
+Run it with:
+
+```bash
+python3 scripts/boto3/aws_ops.py
+```
+
+---
+
+## CI Pipeline
+
+GitHub Actions pipeline triggered on every push to `main`.
+
+| Step | What it does |
+|------|-------------|
+| `terraform init` | Initializes modules and providers |
+| `terraform validate` | Validates configuration syntax |
+| `tfsec` | Security scan — 0 findings |
 
 ---
 
 ## Structure
 
-```
 aws-core-terraform/
+├── .github/workflows/  # GitHub Actions CI pipeline
 ├── terraform/
 │   ├── modules/        # Reusable modules — vpc, ec2, s3, iam
 │   └── envs/dev/       # Dev environment — main, variables, outputs, backend
 ├── scripts/boto3/      # Python scripts to interact with deployed resources
 ├── docs/               # Architecture diagram and prerequisites
 └── decisions/          # ADRs — architectural decision records
-```
+
 
 ---
 
@@ -64,12 +95,12 @@ Before running anything, check the [Prerequisites & Usage guide](docs/PREREQUISI
 | Component | Role | Badge |
 |-----------|------|-------|
 | Terraform | Infrastructure as Code | ![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC?logo=terraform&logoColor=white) |
-| AWS VPC | Isolated network with public/private subnets across 2 AZs | ![VPC](https://img.shields.io/badge/AWS-VPC-FF9900?logo=amazonaws&logoColor=white) |
-| AWS EC2 | Compute instance — t3.micro, Amazon Linux 2023 | ![EC2](https://img.shields.io/badge/AWS-EC2-FF9900?logo=amazonaws&logoColor=white) |
-| AWS S3 | Object storage with versioning, encryption, and access control | ![S3](https://img.shields.io/badge/AWS-S3-FF9900?logo=amazonaws&logoColor=white) |
+| AWS VPC | Isolated network with public/private subnets, Flow Logs enabled | ![VPC](https://img.shields.io/badge/AWS-VPC-FF9900?logo=amazonaws&logoColor=white) |
+| AWS EC2 | t3.micro, Amazon Linux 2023, encrypted disk, IMDSv2 | ![EC2](https://img.shields.io/badge/AWS-EC2-FF9900?logo=amazonaws&logoColor=white) |
+| AWS S3 | Versioning, KMS encryption, access logging, public access blocked | ![S3](https://img.shields.io/badge/AWS-S3-FF9900?logo=amazonaws&logoColor=white) |
 | AWS IAM | Least-privilege role and policy for EC2 | ![IAM](https://img.shields.io/badge/AWS-IAM-FF9900?logo=amazonaws&logoColor=white) |
-| Python boto3 | AWS SDK — interact with deployed infrastructure | ![boto3](https://img.shields.io/badge/boto3-SDK-FF9900?logo=amazonaws&logoColor=white) |
-| GitHub Actions | CI — terraform validate, tfsec security scan | ![CI](https://img.shields.io/badge/GitHub%20Actions-CI-2088FF?logo=githubactions&logoColor=white) |
+| Python boto3 | AWS SDK — list EC2, describe S3, upload objects | ![boto3](https://img.shields.io/badge/boto3-SDK-FF9900?logo=amazonaws&logoColor=white) |
+| GitHub Actions | CI — terraform validate + tfsec, 0 findings | ![CI](https://img.shields.io/badge/GitHub%20Actions-CI-2088FF?logo=githubactions&logoColor=white) |
 
 ---
 
