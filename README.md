@@ -128,57 +128,84 @@ The project separates reusable Terraform modules from environment configuration.
 
 Terraform state is stored remotely in Amazon S3.
 
-```text
-Bucket: adrian-terraform-state-dev
-Key:    dev/terraform.tfstate
-Region: eu-west-1
+| Setting | Value |
+|---------|-------|
+| Bucket | `adrian-terraform-state-dev` |
+| Key | `dev/terraform.tfstate` |
+| Region | `eu-west-1` |
 
 The backend uses S3 with encryption enabled.
-boto3
+
+---
+
+## boto3
+
 The project includes a small Python script using boto3 to interact with the deployed infrastructure.
-Function	Purpose
-lista_ec2()	Lists EC2 instances and their state
-describir_s3()	Lists S3 buckets
-subir_objeto()	Uploads a test object to S3
 
+| Function | Purpose |
+|----------|---------|
+| `lista_ec2()` | Lists EC2 instances and their state |
+| `describir_s3()` | Lists S3 buckets |
+| `subir_objeto()` | Uploads a test object to S3 |
 
-Run it with:
-python3 scripts/boto3/aws_ops.py
+Run it with `python3 scripts/boto3/aws_ops.py`.
 
-CI
-GitHub Actions runs on every push to main.
+---
+
+## CI
+
+GitHub Actions runs on every push to `main`.
+
 The pipeline performs:
-Terraform Init
-      ↓
-Terraform Validate
-      ↓
-tfsec Security Scan
 
-The current Terraform configuration passes the tfsec scan with zero findings.
-Deployment
-cd terraform/envs/dev
+`Terraform Init` → `Terraform Validate` → `tfsec Security Scan`
 
-terraform init
-terraform plan
-terraform apply
+The current Terraform configuration passes the `tfsec` scan with zero findings.
+
+---
+
+## Deployment
+
+From the development environment:
+
+1. `terraform init`
+2. `terraform plan`
+3. `terraform apply`
 
 Terraform Plan is used to review infrastructure changes before deployment.
-Cleanup
-The infrastructure uses real AWS resources, so it should be destroyed after testing:
-terraform destroy
 
-Design Decisions
+---
+
+## Cleanup
+
+The infrastructure uses real AWS resources, so it should be destroyed after testing.
+
+Run `terraform destroy` from `terraform/envs/dev`.
+
+---
+
+## Design Decisions
+
 The project includes an Architecture Decision Record explaining the choice of Terraform over AWS CDK and CloudFormation.
+
 [ADR-001: Why Terraform over AWS CDK / CloudFormation](decisions/ADR-001-why-terraform.md)
+
 Key reasons:
+
 - Cloud agnostic
 - Declarative infrastructure
 - Terraform Registry
 - Industry adoption
 - Remote state support
-What I Learned
+
+---
+
+## What I Learned
+
 This project helped me move from manually configuring AWS resources through the Console to managing infrastructure through code.
+
 Key areas:
+
 - Terraform modules
 - AWS networking
 - EC2
@@ -190,10 +217,21 @@ Key areas:
 - GitHub Actions
 - Terraform security scanning
 - Infrastructure documentation
-Project Context
+
+---
+
+## Project Context
+
 This project is part of a broader infrastructure and homelab learning environment.
+
 The infrastructure was deployed, tested and destroyed in a real AWS account.
+
 The goal was to practice a repeatable Infrastructure as Code workflow with modular Terraform, remote state, security controls, CI and documentation.
-Author
+
+---
+
+## Author
+
 Adrian Tamargo
-GitHub · LinkedIn
+
+[GitHub](https://github.com/AdrianStudio) · [LinkedIn](https://linkedin.com/in/adrian-daniel-tamargo-miller-35a017355)
