@@ -9,7 +9,7 @@
 
 Modular AWS infrastructure built with Terraform.
 
-The project replaces repetitive AWS Console configuration with a simple Infrastructure as Code workflow. Infrastructure is defined in code, reviewed with Terraform and deployed with a small number of commands.
+The project replaces repetitive AWS Console configuration with a consistent Infrastructure as Code workflow. Infrastructure is defined in code, reviewed with Terraform and deployed with a small number of commands.
 
 The environment covers networking, compute, storage, IAM and monitoring.
 
@@ -29,7 +29,9 @@ Instead of configuring infrastructure manually through the AWS Console, this pro
 
 <img width="1225" height="601" alt="AWS architecture diagram" src="docs/architecture.png" />
 
-The infrastructure is deployed in `eu-west-1` and consists of:
+The infrastructure is deployed in `eu-west-1`.
+
+It includes:
 
 - VPC `10.0.0.0/17`
 - 2 public subnets across 2 Availability Zones
@@ -37,21 +39,56 @@ The infrastructure is deployed in `eu-west-1` and consists of:
 - EC2 `t3.micro`
 - IAM Role and Instance Profile
 - S3 bucket with versioning and KMS encryption
-- VPC Flow Logs with CloudWatch
+- VPC Flow Logs with CloudWatch Logs
 - S3 remote Terraform state
 
 ---
 
 ## Infrastructure
 
-| Component | Purpose |
-|-----------|---------|
-| `vpc` | VPC, public and private subnets, Internet Gateway, routing and Flow Logs |
-| `ec2` | Amazon Linux 2023 EC2 instance with encrypted root volume and IMDSv2 |
-| `s3` | Versioned and encrypted S3 bucket with public access blocked |
-| `iam` | IAM Role and Instance Profile providing EC2 with limited S3 access |
+### VPC
 
-All resources are tagged with `Project`, `Environment` and `Name`.
+The VPC module provides the network foundation:
+
+- 2 public subnets
+- 2 private subnets
+- Internet Gateway
+- Public route table
+- VPC Flow Logs
+- CloudWatch Log Group
+
+The private subnets are isolated and currently have no NAT Gateway.
+
+### EC2
+
+The EC2 module deploys an Amazon Linux 2023 `t3.micro` instance.
+
+It uses:
+
+- Encrypted root volume
+- IMDSv2
+- Automatic AMI selection
+- Project and environment tagging
+
+### S3
+
+The S3 module creates a versioned and encrypted bucket.
+
+It includes:
+
+- Versioning
+- AWS KMS encryption
+- Public access blocking
+- Access logging
+
+### IAM
+
+The IAM module creates an EC2 Instance Profile and IAM Role.
+
+The role provides the EC2 instance with the S3 permissions required by the project:
+
+- `s3:GetObject`
+- `s3:ListBucket`
 
 ---
 
@@ -68,48 +105,37 @@ Security controls are implemented directly in Terraform.
 - IAM Role instead of static AWS credentials
 - Limited S3 permissions for EC2
 
-The Terraform configuration is also scanned with `tfsec` as part of CI.
+The Terraform configuration is also scanned with `tfsec` through GitHub Actions.
 
 ---
 
-## Terraform Structure
+## Project Structure
+
+The project separates reusable Terraform modules from environment configuration.
+
+| Directory | Purpose |
+|-----------|---------|
+| `terraform/modules/` | Reusable VPC, EC2, S3 and IAM modules |
+| `terraform/envs/dev/` | Development environment configuration |
+| `scripts/boto3/` | Python scripts for AWS operations |
+| `decisions/` | Architecture Decision Records |
+| `docs/` | Documentation and architecture diagram |
+| `.github/workflows/` | GitHub Actions CI |
+
+---
+
+## Remote State
+
+Terraform state is stored remotely in Amazon S3.
 
 ```text
-aws-core-terraform/
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-├── decisions/
-│   └── ADR-001-why-terraform.md
-├── docs/
-│   ├── architecture.png
-│   └── PREREQUISITES.md
-├── scripts/
-│   └── boto3/
-│       └── aws_ops.py
-└── terraform/
-    ├── modules/
-    │   ├── vpc/
-    │   ├── ec2/
-    │   ├── s3/
-    │   └── iam/
-    └── envs/
-        └── dev/
-            ├── backend.tf
-            ├── main.tf
-            ├── outputs.tf
-            └── variables.tf
-
-Reusable modules are separated from the environment configuration.
-Remote State
-Terraform state is stored remotely in Amazon S3.
 Bucket: adrian-terraform-state-dev
 Key:    dev/terraform.tfstate
 Region: eu-west-1
 
 The backend uses S3 with encryption enabled.
 boto3
-The project also includes a small Python script using boto3 to interact with the deployed infrastructure.
+The project includes a small Python script using boto3 to interact with the deployed infrastructure.
 Function	Purpose
 lista_ec2()	Lists EC2 instances and their state
 describir_s3()	Lists S3 buckets
@@ -136,7 +162,7 @@ terraform init
 terraform plan
 terraform apply
 
-Terraform Plan is used to review changes before deployment.
+Terraform Plan is used to review infrastructure changes before deployment.
 Cleanup
 The infrastructure uses real AWS resources, so it should be destroyed after testing:
 terraform destroy
@@ -164,21 +190,6 @@ Key areas:
 - GitHub Actions
 - Terraform security scanning
 - Infrastructure documentation
-Stack
-Technology	Role
-Terraform	Infrastructure as Code
-AWS VPC	Network infrastructure
-AWS EC2	Compute
-AWS S3	Storage and Terraform state
-AWS IAM	Access control
-CloudWatch	VPC Flow Logs
-Python	Automation
-boto3	AWS SDK
-GitHub Actions	CI
-tfsec	Security scanning
-Excalidraw	Architecture diagram
-
-
 Project Context
 This project is part of a broader infrastructure and homelab learning environment.
 The infrastructure was deployed, tested and destroyed in a real AWS account.
